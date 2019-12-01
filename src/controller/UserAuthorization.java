@@ -11,7 +11,7 @@ public class UserAuthorization {
 
     public static String authoriseUser(String hash, String email) {
         try {
-            User user = UserRepository.getInstance().findUserByEmailHash(hash, email);
+            User user = UserRepository.getInstance().findUserByEmailHash(email, hash);
 
             if (user != null) {
                 return "correct";

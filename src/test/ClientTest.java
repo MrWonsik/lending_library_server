@@ -97,7 +97,7 @@ public class ClientTest {
         ClientTest clientTest = new ClientTest();
         clientTest.startConnection("localhost", 5000);
         String hash = UserAuthorization.generateHash("Tomek1");
-        String msg1 = clientTest.sendMessage("login;tomek@gmail.com;" + hash);
+        String msg1 = clientTest.sendMessage("login;"+hash+";tomek@gmail.com");
         clientTest.stopConnection();
         assertEquals("correct", msg1);
     }
