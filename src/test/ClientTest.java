@@ -1,13 +1,20 @@
 package test;
 
+import controller.BookReservation;
 import controller.UserAuthorization;
 import org.junit.Test;
+import repository.UserRepository;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
@@ -97,9 +104,41 @@ public class ClientTest {
         ClientTest clientTest = new ClientTest();
         clientTest.startConnection("localhost", 5000);
         String hash = UserAuthorization.generateHash("Tomek1");
-        String msg1 = clientTest.sendMessage("login;"+hash+";tomek@gmail.com");
+        String msg1 = clientTest.sendMessage("login;" + hash + ";tomek@gmail.com");
         clientTest.stopConnection();
         assertEquals("correct", msg1);
+    }
+
+    @Test
+    public void parrallelTestReservationTheSameBookByFewUser() {
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        for(int i=0;i<3;i++) {
+            int finalI = (i%3)+1;
+            Random random = new Random();
+            Runnable parallelTask = () -> {
+                try {
+                    ClientTest clientTest = new ClientTest();
+                    clientTest.startConnection("localhost", 5000);
+                    String request = "reserve;"+ finalI +";"+(random.nextInt(7)+1);
+                    //String request = "reserve;"+ finalI +";5";
+                    System.out.println(LocalDateTime.now() + " request: " + request);
+                    String msg1 = clientTest.sendMessage(request);
+                    String terminate = clientTest.sendMessage(".");
+                    System.out.println(LocalDateTime.now() + " response: " + msg1);
+                    clientTest.stopConnection();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+        };
+            executorService.submit(parallelTask);
+        }
+
+        try {
+            executorService.awaitTermination(10000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        executorService.shutdown();
     }
 
 

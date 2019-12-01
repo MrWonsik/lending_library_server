@@ -13,23 +13,21 @@ public class BookReservation {
 
     public static String reserveBook(long user_id, long book_id) {
         try {
-            User user = checkIfUserExists(user_id);
-            Book book = checkIfBookExists(book_id);
-
-            if (!isBookAlreadyReserved(book)) {
-                synchronized (Book.class) {
-                    if (!isBookAlreadyReserved(book)) {
-                        RentRepository.getInstance().addRent(new Rent(user.getId(), book.getId(), "RESERVED"));
-                        Thread.sleep(100);
-                        book.setStatus("RESERVED");
-                        return "reserved";
-                    }
+            synchronized (Book.class) {
+                Book book = checkIfBookExists(book_id);
+                User user = checkIfUserExists(user_id);
+                if (!isBookAlreadyReserved(book)) {
+                    RentRepository.getInstance().addRent(new Rent(user.getId(), book.getId(), "RESERVED"));
+                    book.setStatus("RESERVED");
+                    return "reserved";
                 }
+                Thread.sleep(2000);
             }
 
             return "not available";
         } catch (Exception ex) {
             System.err.println(ex);
+            ex.printStackTrace();
             return "smth wrong";
         }
     }
