@@ -11,18 +11,19 @@ import repository.UserRepository;
 
 public class BookReservation {
 
-    public static String reserveBook(long user_id, long book_id) {
+    // TODO: DO OGARNIĘCIA W KONTEKSCIE JEDNEJ KSIAZKI!!!!
+    public static synchronized String reserveBook(long user_id, long book_id) {
         try {
-            synchronized (Book.class) {
-                Book book = checkIfBookExists(book_id);
-                User user = checkIfUserExists(user_id);
-                if (!isBookAlreadyReserved(book)) {
-                    RentRepository.getInstance().addRent(new Rent(user.getId(), book.getId(), "RESERVED"));
-                    book.setStatus("RESERVED");
-                    return "reserved";
-                }
-                Thread.sleep(2000);
+
+            Book book = checkIfBookExists(book_id);
+            User user = checkIfUserExists(user_id);
+            if (!isBookAlreadyReserved(book)) {
+                RentRepository.getInstance().addRent(new Rent(user.getId(), book.getId(), "RESERVED"));
+                book.setStatus("RESERVED");
+                Thread.sleep(1000);
+                return "reserved";
             }
+
 
             return "not available";
         } catch (Exception ex) {
@@ -30,6 +31,10 @@ public class BookReservation {
             ex.printStackTrace();
             return "smth wrong";
         }
+    }
+
+    private static synchronized void finalizeReserverBook(Book book, User user) throws Exception {
+
     }
 
 

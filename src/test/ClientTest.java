@@ -120,7 +120,7 @@ public class ClientTest {
                     ClientTest clientTest = new ClientTest();
                     clientTest.startConnection("localhost", 5000);
                     String request = "reserve;"+ finalI +";"+(random.nextInt(7)+1);
-                    //String request = "reserve;"+ finalI +";5";
+                    //String request = "reserve;"+ finalI +";6";
                     System.out.println(LocalDateTime.now() + " request: " + request);
                     String msg1 = clientTest.sendMessage(request);
                     String terminate = clientTest.sendMessage(".");
