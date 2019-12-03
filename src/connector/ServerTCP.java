@@ -12,7 +12,7 @@ public class ServerTCP {
        serverSocket = new ServerSocket(port);
        System.out.println("Server started");
        serverIsRunning = true;
-       while(true){
+       while(serverIsRunning){
            new RequestHandler(serverSocket.accept()).start();
        }
     }
@@ -20,6 +20,7 @@ public class ServerTCP {
     public void stop() throws IOException {
        if(serverIsRunning) {
            System.out.println("Server stoped");
+           serverIsRunning = false;
            serverSocket.close();
        }
     }

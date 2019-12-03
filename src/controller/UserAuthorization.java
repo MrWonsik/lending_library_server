@@ -26,11 +26,10 @@ public class UserAuthorization {
     }
 
     public static String generateHash(String password) {
-        String passwordToHash = password;
         String generatedPassword = null;
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(passwordToHash.getBytes());
+            md.update(password.getBytes());
             byte[] bytes = md.digest();
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < bytes.length; i++) {
