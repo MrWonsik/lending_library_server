@@ -22,8 +22,8 @@ public class BookReservation {
                 Book book = checkIfBookExists(book_id);
                 User user = checkIfUserExists(user_id);
                 if (!isBookAlreadyReserved(book)) {
-                   finalizeReserveBook(book, user);
-                   return "reserved";
+                    finalizeReserveBook(book, user);
+                    return "reserved";
                 }
 
 
@@ -41,7 +41,7 @@ public class BookReservation {
         }
     }
 
-    private static User checkIfUserExists(long user_id) throws UserNotFoundException, SQLException{
+    private static User checkIfUserExists(long user_id) throws UserNotFoundException, SQLException {
         User user = UserRepository.getInstance().findUserById(user_id);
         if (user == null) {
             throw new UserNotFoundException("User not found!");
@@ -66,7 +66,7 @@ public class BookReservation {
     private static void finalizeReserveBook(Book book, User user) throws SQLException, InterruptedException {
         RentRepository.getInstance().addRent(new Rent(user.getId(), book.getId(), "RESERVED"));
         book.setStatus("RESERVED");
-        Thread.sleep(1000);
+        Thread.sleep(5000);
     }
 
     public static String cancelReservationOfBook(long user_id, long book_id) {
@@ -96,8 +96,6 @@ public class BookReservation {
         }
         return rent;
     }
-
-
 
 
 }

@@ -108,7 +108,7 @@ public class ClientTest {
     }
 
     @Test
-    public void parrallelTestReservationTheSameBookByFewUser() {
+    public void parallelTestReservationRandomBookByFewUser() {
         ExecutorService executorService = Executors.newFixedThreadPool(7);
         for(int i=0;i<7;i++) {
             int finalI = (i%3)+1;
@@ -118,10 +118,9 @@ public class ClientTest {
                     ClientTest clientTest = new ClientTest();
                     clientTest.startConnection("localhost", 5000);
                     String request = "reserve;"+ finalI +";"+(random.nextInt(7)+1);
-                    //String request = "reserve;"+ finalI +";6";
                     System.out.println(LocalDateTime.now() + " request: " + request);
                     String msg1 = clientTest.sendMessage(request);
-                    String terminate = clientTest.sendMessage(".");
+                    clientTest.sendMessage(".");
                     System.out.println(LocalDateTime.now() + " response: " + msg1 + ", for request " + request);
                     clientTest.stopConnection();
                 } catch (IOException e) {
@@ -139,5 +138,64 @@ public class ClientTest {
         executorService.shutdown();
     }
 
+    @Test
+    public void parallelTestReservationForTheSameBook(){
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        for(int i=0;i<3;i++) {
+            int finalI = (i%3)+1;
+            Runnable parallelTask = () -> {
+                try {
+                    ClientTest clientTest = new ClientTest();
+                    clientTest.startConnection("localhost", 5000);
+                    String request = "reserve;"+ finalI +";6";
+                    System.out.println(LocalDateTime.now() + " request: " + request);
+                    String msg1 = clientTest.sendMessage(request);
+                    clientTest.sendMessage(".");
+                    System.out.println(LocalDateTime.now() + " response: " + msg1 + ", for request " + request);
+                    clientTest.stopConnection();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            };
+            executorService.submit(parallelTask);
+        }
+
+        try {
+            executorService.awaitTermination(10000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        executorService.shutdown();
+    }
+
+    @Test
+    public void parallelTestReservationDifferentBooks(){
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        for(int i=0;i<3;i++) {
+            int finalI = (i%3)+1;
+            Runnable parallelTask = () -> {
+                try {
+                    ClientTest clientTest = new ClientTest();
+                    clientTest.startConnection("localhost", 5000);
+                    String request = "reserve;"+ finalI +";"+finalI;
+                    System.out.println(LocalDateTime.now() + " request: " + request);
+                    String msg1 = clientTest.sendMessage(request);
+                    clientTest.sendMessage(".");
+                    System.out.println(LocalDateTime.now() + " response: " + msg1 + ", for request " + request);
+                    clientTest.stopConnection();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            };
+            executorService.submit(parallelTask);
+        }
+
+        try {
+            executorService.awaitTermination(10000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        executorService.shutdown();
+    }
 
 }
