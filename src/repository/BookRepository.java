@@ -13,11 +13,9 @@ public class BookRepository {
     private volatile static BookRepository bookRepository;
 
     private DbConnector dbConnector;
-    private Statement statement;
 
     private BookRepository(DbConnector dbConnector) {
         this.dbConnector = dbConnector;
-        this.statement = dbConnector.createStatement();
     }
 
     public static BookRepository getInstance() {
@@ -33,7 +31,7 @@ public class BookRepository {
     }
 
     public void createTable(){
-        dbConnector.executeUpdate(this.statement,
+        dbConnector.executeUpdate(dbConnector.createStatement(),
                 "CREATE TABLE IF NOT EXISTS book (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
                         "title VARCHAR(50) NOT NULL, " +
                         "author VARCHAR(50) NOT NULL, " +
@@ -71,7 +69,7 @@ public class BookRepository {
 
     public List<Book> getBooks() {
         List<Book> allBooks = new ArrayList<>();
-        ResultSet resultSet = dbConnector.executeQuery(this.statement, "Select * from book");
+        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), "Select * from book");
         try {
             while (resultSet.next()) {
                 allBooks.add(getBookInfo(resultSet));
@@ -86,7 +84,7 @@ public class BookRepository {
     }
 
     public int setBookStatus(Book book) throws SQLException {
-        int affectedRows = dbConnector.executeUpdate(this.statement, "UPDATE book set status = '" + book.getStatus() + "' where id=" + book.getId());
+        int affectedRows = dbConnector.executeUpdate(dbConnector.createStatement(), "UPDATE book set status = '" + book.getStatus() + "' where id=" + book.getId());
         if (affectedRows == 0) {
             throw new SQLException("Updateting book failed, no rows affected");
         }
@@ -94,7 +92,7 @@ public class BookRepository {
     }
 
     public Book findBookById(Long book_id) throws SQLException {
-        ResultSet resultSet = dbConnector.executeQuery(this.statement, "SELECT * from book where id=" + book_id);
+        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), "SELECT * from book where id=" + book_id);
         Book book = null;
         while(resultSet.next()){
             book = getBookInfo(resultSet);

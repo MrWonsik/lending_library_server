@@ -13,12 +13,10 @@ public class UserRepository {
     private volatile static UserRepository userRepository;
 
     private DbConnector dbConnector;
-    private Statement statement;
 
 
     private UserRepository(DbConnector dbConnector) {
         this.dbConnector = dbConnector;
-        this.statement = dbConnector.createStatement();
     }
 
     public static UserRepository getInstance(){
@@ -34,7 +32,7 @@ public class UserRepository {
     }
 
     public void createTable(){
-        dbConnector.executeUpdate(this.statement,
+        dbConnector.executeUpdate(dbConnector.createStatement(),
                 "CREATE TABLE IF NOT EXISTS User (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
                         "first_name VARCHAR(30) NOT NULL, " +
                         "last_name VARCHAR(30) NOT NULL, " +
@@ -78,7 +76,7 @@ public class UserRepository {
 
     public List<User> getUsers() {
         List<User> allUsers = new ArrayList<>();
-        ResultSet resultSet = dbConnector.executeQuery(this.statement, "Select * from user");
+        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), "Select * from user");
         try {
             while (resultSet.next()) {
                 allUsers.add(getUserInfo(resultSet));
@@ -92,7 +90,7 @@ public class UserRepository {
     }
 
     public User findUserById(Long id) throws SQLException {
-        ResultSet resultSet = dbConnector.executeQuery(this.statement, String.format("SELECT * from user where id=%d", id));
+        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), String.format("SELECT * from user where id=%d", id));
         User user = null;
         while(resultSet.next()){
             user = getUserInfo(resultSet);
@@ -101,7 +99,7 @@ public class UserRepository {
     }
 
     public User findUserByEmailHash(String email, String hash) throws SQLException {
-        ResultSet resultSet = dbConnector.executeQuery(this.statement, String.format("SELECT * from user where email = '%s' and hash = '%s';", email, hash));
+        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), String.format("SELECT * from user where email = '%s' and hash = '%s';", email, hash));
         User user = null;
         while(resultSet.next()){
             user = getUserInfo(resultSet);

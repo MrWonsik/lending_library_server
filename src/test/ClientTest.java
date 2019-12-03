@@ -1,9 +1,7 @@
 package test;
 
-import controller.BookReservation;
 import controller.UserAuthorization;
 import org.junit.Test;
-import repository.UserRepository;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -111,8 +109,8 @@ public class ClientTest {
 
     @Test
     public void parrallelTestReservationTheSameBookByFewUser() {
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
-        for(int i=0;i<3;i++) {
+        ExecutorService executorService = Executors.newFixedThreadPool(7);
+        for(int i=0;i<7;i++) {
             int finalI = (i%3)+1;
             Random random = new Random();
             Runnable parallelTask = () -> {
@@ -124,7 +122,7 @@ public class ClientTest {
                     System.out.println(LocalDateTime.now() + " request: " + request);
                     String msg1 = clientTest.sendMessage(request);
                     String terminate = clientTest.sendMessage(".");
-                    System.out.println(LocalDateTime.now() + " response: " + msg1);
+                    System.out.println(LocalDateTime.now() + " response: " + msg1 + ", for request " + request);
                     clientTest.stopConnection();
                 } catch (IOException e) {
                     e.printStackTrace();

@@ -1,5 +1,8 @@
 package controller;
 
+import exception.BookNotFoundException;
+import exception.RentNotFoundException;
+import exception.UserNotFoundException;
 import model.Book;
 import model.Rent;
 import model.User;
@@ -7,36 +10,64 @@ import repository.BookRepository;
 import repository.RentRepository;
 import repository.UserRepository;
 
-//TODO: poprawić Wyjątki, dodac własne
+import java.sql.SQLException;
+
 
 public class BookReservation {
 
-    // TODO: DO OGARNIĘCIA W KONTEKSCIE JEDNEJ KSIAZKI!!!!
-    public static synchronized String reserveBook(long user_id, long book_id) {
-        try {
+    public static String reserveBook(Long user_id, Long book_id) {
+        synchronized (book_id) {
+            try {
 
-            Book book = checkIfBookExists(book_id);
-            User user = checkIfUserExists(user_id);
-            if (!isBookAlreadyReserved(book)) {
-                RentRepository.getInstance().addRent(new Rent(user.getId(), book.getId(), "RESERVED"));
-                book.setStatus("RESERVED");
-                Thread.sleep(1000);
-                return "reserved";
+                Book book = checkIfBookExists(book_id);
+                User user = checkIfUserExists(user_id);
+                if (!isBookAlreadyReserved(book)) {
+                   finalizeReserveBook(book, user);
+                   return "reserved";
+                }
+
+
+                return "not available";
+            } catch (BookNotFoundException | UserNotFoundException exception) {
+                System.err.println(exception.getMessage());
+                return exception.getMessage();
+            } catch (SQLException sqlException) {
+                System.err.println(sqlException.getSQLState());
+                return "sql error";
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(exception);
             }
-
-
-            return "not available";
-        } catch (Exception ex) {
-            System.err.println(ex);
-            ex.printStackTrace();
-            return "smth wrong";
         }
     }
 
-    private static synchronized void finalizeReserverBook(Book book, User user) throws Exception {
+    private static User checkIfUserExists(long user_id) throws UserNotFoundException, SQLException{
+        User user = UserRepository.getInstance().findUserById(user_id);
+        if (user == null) {
+            throw new UserNotFoundException("User not found!");
+        }
 
+        return user;
     }
 
+    private static Book checkIfBookExists(long book_id) throws BookNotFoundException, SQLException {
+        Book book = BookRepository.getInstance().findBookById(book_id);
+        if (book == null) {
+            throw new BookNotFoundException("Book not found!");
+        }
+
+        return book;
+    }
+
+    private static boolean isBookAlreadyReserved(Book book) {
+        return book.getStatus().equals("RESERVED");
+    }
+
+    private static void finalizeReserveBook(Book book, User user) throws SQLException, InterruptedException {
+        RentRepository.getInstance().addRent(new Rent(user.getId(), book.getId(), "RESERVED"));
+        book.setStatus("RESERVED");
+        Thread.sleep(1000);
+    }
 
     public static String cancelReservationOfBook(long user_id, long book_id) {
         try {
@@ -49,40 +80,24 @@ public class BookReservation {
             book.setStatus("AVAILABLE");
             return "canceled";
 
-        } catch (Exception ex) {
-            System.err.println(ex);
-            return "smth wrong";
+        } catch (RentNotFoundException | UserNotFoundException | BookNotFoundException exception) {
+            System.err.println(exception.getMessage());
+            return exception.getMessage();
+        } catch (SQLException sqlException) {
+            System.err.println(sqlException.getSQLState());
+            return "sql error";
         }
     }
 
-    private static User checkIfUserExists(long user_id) throws Exception {
-        User user = UserRepository.getInstance().findUserById(user_id);
-        if (user == null) {
-            throw new Exception("User not found!");
-        }
-
-        return user;
-    }
-
-    private static Book checkIfBookExists(long book_id) throws Exception {
-        Book book = BookRepository.getInstance().findBookById(book_id);
-        if (book == null) {
-            throw new Exception("Book not found!");
-        }
-
-        return book;
-    }
-
-    private static boolean isBookAlreadyReserved(Book book) {
-        return book.getStatus().equals("RESERVED");
-    }
-
-    private static Rent checkIfBookReservedByUser(User user, Book book) throws Exception {
+    private static Rent checkIfBookReservedByUser(User user, Book book) throws RentNotFoundException, SQLException {
         Rent rent = RentRepository.getInstance().findRentByUserAndBookAndStatus(user, book, "RESERVED");
         if (rent == null) {
-            throw new Exception("Rent not found!");
+            throw new RentNotFoundException("Rent not found!");
         }
         return rent;
     }
+
+
+
 
 }

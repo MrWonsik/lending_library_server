@@ -16,8 +16,8 @@ import static org.junit.Assert.assertEquals;
 
 public class ServerTest {
 
-    Book book;
-    User user;
+    private Book book;
+    private User user;
 
     @Before
     public void setup() throws SQLException {
@@ -43,7 +43,12 @@ public class ServerTest {
 
     @Test
     public void reserveBookForUserThatNotExists() {
-        assertEquals("smth wrong", BookReservation.reserveBook(8888888L, book.getId()));
+        assertEquals("User not found!", BookReservation.reserveBook(8888888L, book.getId()));
+    }
+
+    @Test
+    public void reserveBookThatNotExists() {
+        assertEquals("Book not found!", BookReservation.reserveBook(user.getId(), 88888888L));
     }
 
     @Test
@@ -54,14 +59,14 @@ public class ServerTest {
 
     @Test
     public void cancelReservationBookThatNotReservedByThisUser() {
-        assertEquals("smth wrong", BookReservation.cancelReservationOfBook(user.getId(), book.getId()));
+        assertEquals("Rent not found!", BookReservation.cancelReservationOfBook(user.getId(), book.getId()));
     }
 
     @Test
     public void cancelReservationBookThatAlreadyCanceled() {
         BookReservation.reserveBook(user.getId(), book.getId());
         BookReservation.cancelReservationOfBook(user.getId(), book.getId());
-        assertEquals("smth wrong", BookReservation.cancelReservationOfBook(user.getId(), book.getId()));
+        assertEquals("Rent not found!", BookReservation.cancelReservationOfBook(user.getId(), book.getId()));
     }
 
     @Test
