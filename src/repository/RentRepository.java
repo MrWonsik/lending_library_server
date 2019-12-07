@@ -81,15 +81,6 @@ public class RentRepository {
         }
     }
 
-    public Rent findRentByUserAndBook(User user, Book book) throws SQLException {
-        ResultSet resultSet = dbConnector.executeQuery(this.statement, "SELECT * from rent where id_user=" + user.getId() + " and id_book =" + book.getId());
-        Rent rent = null;
-        while (resultSet.next()) {
-            rent = new Rent(resultSet.getLong("id"), resultSet.getLong("id_user"), resultSet.getLong("id_book"), resultSet.getString("status"));
-        }
-        return rent;
-    }
-
     public Rent findRentByUserAndBookAndStatus(User user, Book book, String status) throws SQLException {
         ResultSet resultSet = dbConnector.executeQuery(this.statement,
                 String.format(

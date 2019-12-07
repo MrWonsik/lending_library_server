@@ -74,14 +74,6 @@ public class DbConnector {
         return affectedRows;
     }
 
-    public void closeStatement(Statement statement){
-        try {
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void closeConnection(){
         try{
             this.connection.close();

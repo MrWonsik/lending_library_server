@@ -107,6 +107,15 @@ public class UserRepository {
         return user;
     }
 
+    public User findUserByEmail(String email) throws SQLException {
+        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), String.format("SELECT * from user where email = '%s';", email));
+        User user = null;
+        while(resultSet.next()){
+            user = getUserInfo(resultSet);
+        }
+        return user;
+    }
+
     private User getUserInfo(ResultSet resultSet) throws SQLException {
         return new User(
                 resultSet.getLong("id"),

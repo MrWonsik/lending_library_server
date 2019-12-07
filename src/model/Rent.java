@@ -35,10 +35,6 @@ public class Rent {
         return status;
     }
 
-    public LocalDate getDateOfAcction() {
-        return dateOfAcction;
-    }
-
     public void setStatus(String status) {
         this.status = status;
     }

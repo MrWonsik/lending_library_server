@@ -11,6 +11,8 @@ import repository.RentRepository;
 import repository.UserRepository;
 
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
 
 
 public class BookReservation {
@@ -97,5 +99,13 @@ public class BookReservation {
         return rent;
     }
 
+    public static List<Book> getAllBooksReservedAndAvailableForUser(long user_id){
+        try {
+            return BookRepository.getInstance().getBooks(user_id);
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return Collections.emptyList();
+        }
+    }
 
 }

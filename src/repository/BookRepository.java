@@ -7,6 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BookRepository {
 
@@ -19,9 +20,9 @@ public class BookRepository {
     }
 
     public static BookRepository getInstance() {
-        if(bookRepository == null) {
-            synchronized (BookRepository.class){
-                if(bookRepository == null){
+        if (bookRepository == null) {
+            synchronized (BookRepository.class) {
+                if (bookRepository == null) {
                     bookRepository = new BookRepository(DbConnector.getInstance());
                 }
             }
@@ -30,7 +31,7 @@ public class BookRepository {
         return bookRepository;
     }
 
-    public void createTable(){
+    public void createTable() {
         dbConnector.executeUpdate(dbConnector.createStatement(),
                 "CREATE TABLE IF NOT EXISTS book (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
                         "title VARCHAR(50) NOT NULL, " +
@@ -69,12 +70,11 @@ public class BookRepository {
 
     public List<Book> getBooks() {
         List<Book> allBooks = new ArrayList<>();
-        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), "Select * from book");
+        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), "Select * from book where status = 'AVAILABLE'");
         try {
             while (resultSet.next()) {
                 allBooks.add(getBookInfo(resultSet));
             }
-
             return allBooks;
         } catch (SQLException e) {
             System.err.println(e);
@@ -83,10 +83,45 @@ public class BookRepository {
         return Collections.emptyList();
     }
 
+    public List<Book> getBooks(long user_id) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), "Select * from book where status = 'AVAILABLE'");
+
+        String inClause = getAllIdBooksReservedByUser(user_id);
+        if(!inClause.equals("()")) {
+            resultSet = dbConnector.executeQuery(dbConnector.createStatement(), "Select * from book where status = 'AVAILABLE' or id in " + inClause);
+        }
+
+        while (resultSet.next()) {
+            books.add(getBookInfo(resultSet));
+        }
+
+        return books;
+
+    }
+
+    private String getAllIdBooksReservedByUser(long user_id) throws SQLException {
+        List<Long> idBooksReservedByUser = new ArrayList<>();
+        ResultSet idBooksForUserId = dbConnector.executeQuery(dbConnector.createStatement(),
+                "SELECT id_book FROM rent WHERE id_user = " + user_id + " AND status = 'RESERVED'");
+
+        while (idBooksForUserId.next()) {
+            idBooksReservedByUser.add(idBooksForUserId.getLong("id_book"));
+        }
+
+        String booksIdInClause = idBooksReservedByUser.stream()
+                .map(n -> n.toString())
+                .collect(Collectors.joining(",", "(", ")"));
+
+
+        return booksIdInClause;
+
+    }
+
     public int setBookStatus(Book book) throws SQLException {
         int affectedRows = dbConnector.executeUpdate(dbConnector.createStatement(), "UPDATE book set status = '" + book.getStatus() + "' where id=" + book.getId());
         if (affectedRows == 0) {
-            throw new SQLException("Updateting book failed, no rows affected");
+            throw new SQLException("Updating book failed, no rows affected");
         }
         return affectedRows;
     }
@@ -94,7 +129,7 @@ public class BookRepository {
     public Book findBookById(Long book_id) throws SQLException {
         ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), "SELECT * from book where id=" + book_id);
         Book book = null;
-        while(resultSet.next()){
+        while (resultSet.next()) {
             book = getBookInfo(resultSet);
         }
 
