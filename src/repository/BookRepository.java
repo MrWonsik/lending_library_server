@@ -37,19 +37,25 @@ public class BookRepository {
                         "title VARCHAR(50) NOT NULL, " +
                         "author VARCHAR(50) NOT NULL, " +
                         "category VARCHAR(15) NOT NULL, " +
-                        "status VARCHAR(10) NOT NULL);");
+                        "status VARCHAR(10) NOT NULL," +
+                        "publishing_date VARCHAR(4) NOT NULL," +
+                        "publishing_house VARCHAR(50) NOT NULL," +
+                        "number_of_pages INT NOT NULL);");
     }
 
     public void addBook(Book book) throws SQLException {
         Connection connection = dbConnector.getConnection();
         PreparedStatement statement = connection.prepareStatement(
                 String.format("INSERT INTO Book" +
-                                "(title, author, category, status) " +
-                                "VALUES('%s', '%s', '%s', '%s');",
+                                "(title, author, category, status, publishing_date, publishing_house, number_of_pages) " +
+                                "VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%d');",
                         book.getTittle(),
                         book.getAuthor(),
                         book.getCategory(),
-                        book.getStatus()),
+                        book.getStatus(),
+                        book.getPublicationDate(),
+                        book.getPublishingHouse(),
+                        book.getNumberOfPages()),
                 Statement.RETURN_GENERATED_KEYS);
 
         int affectedRows = statement.executeUpdate();
@@ -142,6 +148,9 @@ public class BookRepository {
                 resultSet.getString("title"),
                 resultSet.getString("author"),
                 resultSet.getString("category"),
-                resultSet.getString("status"));
+                resultSet.getString("status"),
+                resultSet.getString("publishing_date"),
+                resultSet.getString("publishing_house"),
+                resultSet.getInt("number_of_pages"));
     }
 }

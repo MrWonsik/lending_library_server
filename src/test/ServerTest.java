@@ -21,7 +21,7 @@ public class ServerTest {
 
     @Before
     public void setup() throws SQLException {
-        book = new Book("Przykladowa ksiazka", "jakis autor", "jakas kategoria");
+        book = new Book("Przykladowa ksiazka", "jakis autor", "jakas kategoria", "WYDAWNICTWO", "2019", 5);
         user = new User("imie", "nazwisko", "email", "city", "street", "postalCode", UserAuthorization.generateHash("Test123"));
     }
 

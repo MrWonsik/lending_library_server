@@ -115,7 +115,7 @@ public class ClientTest {
                 try {
                     ClientTest clientTest = new ClientTest();
                     clientTest.startConnection("localhost", 5000);
-                    String request = "reserve;" + finalI + ";" + (random.nextInt(7) + 1);
+                    String request = "reserve;" + finalI + ";" + (random.nextInt(15) + 1);
                     System.out.println(LocalDateTime.now() + " request: " + request);
                     String response = clientTest.sendMessage(request);
                     clientTest.sendMessage(".");
