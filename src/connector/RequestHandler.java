@@ -79,8 +79,9 @@ public class RequestHandler extends Thread {
                         out.println("over get book");
                         break;
                     }
-                    default:
+                    default: {
                         out.println("request not found!");
+                    }
                 }
             }
 

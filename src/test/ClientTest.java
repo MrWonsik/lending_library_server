@@ -1,6 +1,8 @@
 package test;
 
 import controller.UserAuthorization;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -18,106 +20,89 @@ import static org.junit.Assert.assertEquals;
 
 public class ClientTest {
 
+    private static ClientTest clientTest;
     private Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
 
-    public void startConnection(String ip, int port) throws IOException {
+    private void startConnection(String ip, int port) throws IOException {
         clientSocket = new Socket(ip, port);
         out = new PrintWriter(clientSocket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
     }
 
-    public String sendMessage(String msg) throws IOException {
+    private String sendMessage(String msg) throws IOException {
         out.println(msg);
         String resp = in.readLine();
         return resp;
     }
 
-    public void stopConnection() throws IOException {
+    private void stopConnection() throws IOException {
         in.close();
         out.close();
         clientSocket.close();
     }
 
-    @Test
-    public void endConnection() throws IOException {
-        ClientTest clientTest = new ClientTest();
+    @BeforeClass
+    public static void testInitializer() throws IOException {
+        clientTest = new ClientTest();
         clientTest.startConnection("localhost", 5000);
-        String terminate = clientTest.sendMessage(".");
+    }
+
+    @AfterClass
+    public static void endTesting() throws IOException {
+        clientTest.sendMessage(".");
         clientTest.stopConnection();
-        assertEquals("bye", terminate);
     }
 
     @Test
     public void tryToRentABook() throws IOException {
-        ClientTest clientTest = new ClientTest();
-        clientTest.startConnection("localhost", 5000);
         String response = clientTest.sendMessage("reserve;2;4");
-        clientTest.sendMessage(".");
-        clientTest.stopConnection();
         assertEquals("reserved", response);
     }
 
     @Test
     public void tryToRentABookTwoTimes() throws IOException {
-        ClientTest clientTest = new ClientTest();
-        clientTest.startConnection("localhost", 5000);
         clientTest.sendMessage("reserve;2;7");
         String response = clientTest.sendMessage("reserve;2;7");
-        clientTest.sendMessage(".");
-        clientTest.stopConnection();
         assertEquals("not available", response);
     }
 
     @Test
     public void getUserInfo() throws IOException {
-        ClientTest clientTest = new ClientTest();
-        clientTest.startConnection("localhost", 5000);
         String response = clientTest.sendMessage("getUserInfo;tomek@gmail.com");
-        clientTest.sendMessage(".");
-        clientTest.stopConnection();
         assertEquals("Tomek;Tomalski;1", response);
     }
 
 
     @Test
     public void tryToRentABookAndCancelReservation() throws IOException {
-        ClientTest clientTest = new ClientTest();
-        clientTest.startConnection("localhost", 5000);
         clientTest.sendMessage("reserve;2;4");
         String response = clientTest.sendMessage("cancel;2;4");
-        clientTest.sendMessage(".");
-        clientTest.stopConnection();
         assertEquals("canceled", response);
     }
 
     @Test
     public void tryToGetBooks() throws IOException {
-        ClientTest clientTest = new ClientTest();
-        clientTest.startConnection("localhost", 5000);
-        String msg1 = clientTest.sendMessage("getBooks;2");
+        String response = clientTest.sendMessage("getBooks;2");
         String book = "";
-        if (msg1.equals("get book")) {
-            while ((!book.equals("over get book"))) {
-                book = clientTest.sendMessage("i got it!");
+        if (response.equals("get book")) {
+            while (true) {
+                book = clientTest.in.readLine();
+                if(book.equals("over get book")){
+                    break;
+                }
                 System.out.println(book);
             }
         }
-        clientTest.sendMessage(".");
-        clientTest.stopConnection();
         assertEquals("over get book", book);
     }
 
     @Test
     public void tryToLogin() throws IOException {
-        ClientTest clientTest = new ClientTest();
-        clientTest.startConnection("localhost", 5000);
         String hash = UserAuthorization.generateHash("Tomek1");
-        String msg1 = clientTest.sendMessage("login;" + hash + ";tomek@gmail.com");
-        clientTest.sendMessage(".");
-        clientTest.stopConnection();
-        assertEquals("correct", msg1);
+        String response = clientTest.sendMessage("login;" + hash + ";tomek@gmail.com");
+        assertEquals("correct", response);
     }
 
     @Test
