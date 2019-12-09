@@ -4,6 +4,7 @@ import database.DbConnector;
 import model.Book;
 
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -94,7 +95,7 @@ public class BookRepository {
         ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), "Select * from book where status = 'AVAILABLE'");
 
         String inClause = getAllIdBooksReservedByUser(user_id);
-        if(!inClause.equals("()")) {
+        if (!inClause.equals("()")) {
             resultSet = dbConnector.executeQuery(dbConnector.createStatement(), "Select * from book where status = 'AVAILABLE' or id in " + inClause);
         }
 
@@ -104,6 +105,22 @@ public class BookRepository {
 
         return books;
 
+    }
+
+    public List<Book> getBooksWithFilter(long user_id, String title, String author, String publishingHome, String category) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), MessageFormat.format("Select * from book where status = ''AVAILABLE'' and title like ''%{0}%'' and author like ''%{1}%'' and publishing_house like ''%{2}%'' and category like ''%{3}%''", title, author, publishingHome, category));
+
+        String inClause = getAllIdBooksReservedByUser(user_id);
+        if (!inClause.equals("()")) {
+            resultSet = dbConnector.executeQuery(dbConnector.createStatement(), MessageFormat.format("Select * from book where (status = ''AVAILABLE'' or id in {0}) and title like ''%{1}%'' and author like ''%{2}%'' and publishing_house like ''%{3}%'' and category like ''%{4}%''", inClause, title, author, publishingHome, category));
+        }
+
+        while (resultSet.next()) {
+            books.add(getBookInfo(resultSet));
+        }
+
+        return books;
     }
 
     private String getAllIdBooksReservedByUser(long user_id) throws SQLException {
@@ -153,4 +170,6 @@ public class BookRepository {
                 resultSet.getString("publishing_house"),
                 resultSet.getInt("number_of_pages"));
     }
+
+
 }

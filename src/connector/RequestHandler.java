@@ -79,6 +79,20 @@ public class RequestHandler extends Thread {
                         out.println("over get book");
                         break;
                     }
+                    case "getBooksWithFilter": {
+                        long user_id = Long.parseLong(request[1]);
+                        String title = request[2];
+                        String author = request[3];
+                        String publishingHome = request[4];
+                        String category = request[5];
+                        List<Book> usersBook = BookReservation.getAllBooksReservedAndAvailableForUser(user_id, title, author, publishingHome, category);
+                        out.println("get book");
+                        for (Book book : usersBook) {
+                            out.println(book);
+                        }
+                        out.println("over get book");
+                        break;
+                    }
                     default: {
                         out.println("request not found!");
                     }

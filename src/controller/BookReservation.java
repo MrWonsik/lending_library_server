@@ -108,4 +108,13 @@ public class BookReservation {
         }
     }
 
+    public static List<Book> getAllBooksReservedAndAvailableForUser(long user_id, String title, String author, String publishingHome, String category) {
+        try {
+            return BookRepository.getInstance().getBooksWithFilter(user_id, title, author, publishingHome, category);
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
 }
