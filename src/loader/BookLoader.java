@@ -1,10 +1,10 @@
 package loader;
 
-import database.DbConnector;
 import model.Book;
 import repository.BookRepository;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BookLoader {
@@ -15,7 +15,7 @@ public class BookLoader {
         try {
             new Book("W pustyni i w puszczy", "Henryk Sienkiewicz", "Adventure", "2017", "Wydawnictwo GREG", 312);
             new Book("Przygody Tomka Sawyera", "Mark Twain", "Adventure", "2008", "Wydawnictwo GREG", 204);
-            new Book("Dziewczyna z pociągu", "Paula Hawkins", "Thriller", "2017","Świat Książki", 328 );
+            new Book("Dziewczyna z pociągu", "Paula Hawkins", "Thriller", "2017", "Świat Książki", 328);
             new Book("Ojciec chrzestny", "Mario Puzo", "Crime Story", "2019", "Wydawnictwo Albatros", 480);
             new Book("Mężczyzna z klasą", "Łukasz Kielban", "Guide", "2016", "Wydawnictwo ZNAK", 269);
             new Book("Sztuka kochania", "Magdalena Wisłocka", "Guide", "1984", "ISKRY", 284);

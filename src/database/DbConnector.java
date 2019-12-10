@@ -53,27 +53,6 @@ public class DbConnector {
         return null;
     }
 
-    public ResultSet executeQuery(Statement statement, String sqlQuery){
-        try {
-            System.out.println(sqlQuery);
-            return statement.executeQuery(sqlQuery);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public int executeUpdate(Statement statement, String sqlQuery){
-        int affectedRows = 0;
-        try {
-            System.out.println(sqlQuery);
-            affectedRows = statement.executeUpdate(sqlQuery);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return affectedRows;
-    }
-
     public void closeConnection(){
         try{
             this.connection.close();
@@ -86,8 +65,12 @@ public class DbConnector {
 
     public void dropAllTables(){
         Statement statement = createStatement();
-        executeUpdate(statement, "DROP TABLE IF EXISTS rent");
-        executeUpdate(statement, "DROP TABLE IF EXISTS user");
-        executeUpdate(statement, "DROP TABLE IF EXISTS book");
+        try {
+            statement.executeUpdate("DROP TABLE IF EXISTS rent");
+            statement.executeUpdate("DROP TABLE IF EXISTS user");
+            statement.executeUpdate("DROP TABLE IF EXISTS book");
+        } catch (SQLException ex){
+            System.err.println(ex.getMessage());
+        }
     }
 }

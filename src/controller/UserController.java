@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 public class UserController {
 
-    public static String getUserInfo(String email) {
+    public static User getUserInfo(String email) {
         User user = null;
         try {
             user = UserRepository.getInstance().findUserByEmail(email);
@@ -15,10 +15,6 @@ public class UserController {
             e.printStackTrace();
         }
 
-        if(user == null) {
-            return "undefined;undefined;0";
-        }
-
-        return user.getFirstname() + ";" + user.getLastName() + ";" + user.getId();
+        return user;
     }
 }

@@ -27,20 +27,25 @@ public class RentRepository {
                 }
             }
         }
-
         return rentRepository;
     }
 
-    public void createTable() {
-        dbConnector.executeUpdate(this.statement,
+    public void createTable(){
+        String createRentTableQuery =
                 "CREATE TABLE IF NOT EXISTS rent (" +
-                        "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-                        "id_user INT NOT NULL, " +
-                        "id_book INT NOT NULL, " +
-                        "date_of_action DATE NOT NULL default CURRENT_TIMESTAMP, " +
-                        "status VARCHAR(10) NOT NULL, " +
-                        "FOREIGN KEY (id_user) REFERENCES user(id) ON DELETE RESTRICT," +
-                        "FOREIGN KEY (id_book) REFERENCES book(id) ON DELETE RESTRICT);");
+                "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                "id_user INT NOT NULL, " +
+                "id_book INT NOT NULL, " +
+                "date_of_action DATE NOT NULL default CURRENT_TIMESTAMP, " +
+                "status VARCHAR(10) NOT NULL, " +
+                "FOREIGN KEY (id_user) REFERENCES user(id) ON DELETE RESTRICT," +
+                "FOREIGN KEY (id_book) REFERENCES book(id) ON DELETE RESTRICT);";
+        try {
+            PreparedStatement statement = dbConnector.getConnection().prepareStatement(createRentTableQuery);
+            statement.executeUpdate();
+        } catch (SQLException ex){
+            System.err.println(ex.getMessage());
+        }
     }
 
     public void addRent(Rent rent) throws SQLException {
@@ -73,8 +78,11 @@ public class RentRepository {
     }
 
     public void cancelRent(Rent rent) throws SQLException {
-        int affectedRows = dbConnector.executeUpdate(statement, String.format("UPDATE rent SET status = '" +
-                rent.getStatus() + "' where id = " + rent.getId()));
+        String cancelRentQuery = "UPDATE rent SET status = ? where id = ?";
+        PreparedStatement statement = dbConnector.getConnection().prepareStatement(cancelRentQuery);
+        statement.setString(1, rent.getStatus());
+        statement.setLong(2, rent.getId());
+        int affectedRows = statement.executeUpdate();
 
         if (affectedRows == 0) {
             throw new SQLException("Canceled rent failed, no rows affected");
@@ -82,13 +90,14 @@ public class RentRepository {
     }
 
     public Rent findRentByUserAndBookAndStatus(User user, Book book, String status) throws SQLException {
-        ResultSet resultSet = dbConnector.executeQuery(this.statement,
-                String.format(
-                        "SELECT * from rent where id_user=%d and id_book =%d and status = '%s';",
-                        user.getId(),
-                        book.getId(),
-                        status)
-        );
+        String findRentByUserAndBookAndStatusQuery =  "SELECT * from rent where id_user= ? and id_book = ? and status = ?";
+        PreparedStatement statement = dbConnector.getConnection().prepareStatement(findRentByUserAndBookAndStatusQuery);
+        statement.setLong(1, user.getId());
+        statement.setLong(2, book.getId());
+        statement.setString(3, status);
+
+        ResultSet resultSet = statement.executeQuery();
+
         Rent rent = null;
         while (resultSet.next()) {
             rent = new Rent(resultSet.getLong("id"), resultSet.getLong("id_user"), resultSet.getLong("id_book"), resultSet.getString("status"));

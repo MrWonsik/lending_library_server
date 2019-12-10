@@ -32,31 +32,34 @@ public class UserRepository {
     }
 
     public void createTable(){
-        dbConnector.executeUpdate(dbConnector.createStatement(),
-                "CREATE TABLE IF NOT EXISTS User (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-                        "first_name VARCHAR(30) NOT NULL, " +
-                        "last_name VARCHAR(30) NOT NULL, " +
-                        "email VARCHAR(50) NOT NULL, " +
-                        "city VARCHAR(50) NOT NULL, " +
-                        "street VARCHAR(100) NOT NULL, " +
-                        "postal_code VARCHAR(10) NOT NULL, " +
-                        "hash VARCHAR(255) NOT NULL);");
+        try {
+            String createUserTableQuery = "CREATE TABLE IF NOT EXISTS User (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                    "first_name VARCHAR(30) NOT NULL, " +
+                    "last_name VARCHAR(30) NOT NULL, " +
+                    "email VARCHAR(50) NOT NULL, " +
+                    "city VARCHAR(50) NOT NULL, " +
+                    "street VARCHAR(100) NOT NULL, " +
+                    "postal_code VARCHAR(10) NOT NULL, " +
+                    "hash VARCHAR(255) NOT NULL);";
+            PreparedStatement statement = dbConnector.getConnection().prepareStatement(createUserTableQuery);
+            statement.executeUpdate();
+        } catch (SQLException ex){
+            System.err.println(ex.getMessage());
+        }
     }
 
     public void addUser(User user) throws SQLException {
-        Connection connection = dbConnector.getConnection();
-        PreparedStatement statement = connection.prepareStatement(
-                String.format("INSERT INTO User" +
-                        "(first_name, last_name, email, city, street, postal_code, hash) " +
-                        "VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s');",
-                        user.getFirstname(),
-                        user.getLastName(),
-                        user.getEmail(),
-                        user.getCity(),
-                        user.getStreet(),
-                        user.getPostalCode(),
-                        user.getHash()),
-                        Statement.RETURN_GENERATED_KEYS);
+        String addUserQuery = "INSERT INTO User" +
+                "(first_name, last_name, email, city, street, postal_code, hash) " +
+                "VALUES(?, ?, ?, ?, ?, ?, ?)";
+        PreparedStatement statement = dbConnector.getConnection().prepareStatement(addUserQuery, Statement.RETURN_GENERATED_KEYS);
+        statement.setString(1, user.getFirstname());
+        statement.setString(2, user.getLastName());
+        statement.setString(3, user.getEmail());
+        statement.setString(4, user.getCity());
+        statement.setString(5, user.getStreet());
+        statement.setString(6, user.getPostalCode());
+        statement.setString(7, user.getHash());
 
         int affectedRows = statement.executeUpdate();
 
@@ -76,8 +79,10 @@ public class UserRepository {
 
     public List<User> getUsers() {
         List<User> allUsers = new ArrayList<>();
-        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), "Select * from user");
+        String getUsersQuery = "Select * from user";
         try {
+            PreparedStatement statement = dbConnector.getConnection().prepareStatement(getUsersQuery);
+            ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 allUsers.add(getUserInfo(resultSet));
             }
@@ -90,7 +95,10 @@ public class UserRepository {
     }
 
     public User findUserById(Long id) throws SQLException {
-        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), String.format("SELECT * from user where id=%d", id));
+        String findUserByIdQuery = "SELECT * from user where id=?";
+        PreparedStatement statement = dbConnector.getConnection().prepareStatement(findUserByIdQuery);
+        statement.setLong(1, id);
+        ResultSet resultSet = statement.executeQuery();
         User user = null;
         while(resultSet.next()){
             user = getUserInfo(resultSet);
@@ -99,7 +107,12 @@ public class UserRepository {
     }
 
     public User findUserByEmailHash(String email, String hash) throws SQLException {
-        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), String.format("SELECT * from user where email = '%s' and hash = '%s';", email, hash));
+        String findUserByEmailHashQuery = String.format("SELECT * from user where email = ? and hash = ?");
+        PreparedStatement statement = dbConnector.getConnection().prepareStatement(findUserByEmailHashQuery);
+        statement.setString(1, email);
+        statement.setString(2, hash);
+        ResultSet resultSet = statement.executeQuery();
+
         User user = null;
         while(resultSet.next()){
             user = getUserInfo(resultSet);
@@ -108,7 +121,10 @@ public class UserRepository {
     }
 
     public User findUserByEmail(String email) throws SQLException {
-        ResultSet resultSet = dbConnector.executeQuery(dbConnector.createStatement(), String.format("SELECT * from user where email = '%s';", email));
+        String findUserByEmailQuery = "SELECT * from user where email = ?";
+        PreparedStatement statement = dbConnector.getConnection().prepareStatement(findUserByEmailQuery);
+        statement.setString(1, email);
+        ResultSet resultSet = statement.executeQuery();
         User user = null;
         while(resultSet.next()){
             user = getUserInfo(resultSet);

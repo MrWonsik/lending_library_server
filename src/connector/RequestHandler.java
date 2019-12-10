@@ -29,7 +29,6 @@ public class RequestHandler extends Thread {
             out = new PrintWriter(connection.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
-
             boolean isTerminated = false;
             String inputLine;
 
